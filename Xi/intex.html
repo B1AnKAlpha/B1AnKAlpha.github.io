@@ -103,6 +103,7 @@ body {
             <select id="chapterSelect" class="select"></select>
             <div class="filter-group" id="typeFilters"></div>
             <div class="filter-group" id="modeFilters"></div>
+            <div class="filter-group" id="datasetFilters"></div>
         </div>
         <div class="stats">
             <div class="stat"><strong id="statTotal">0</strong><span>总题数</span></div>
@@ -118,10 +119,10 @@ body {
     </div>
 
     <div class="card" id="localLoadCard" style="display:none;">
-        <div style="margin-bottom:10px; color:#b91c1c; font-weight:600;">浏览器阻止 file:// 读取，请选择本地 all_content.txt 加载题库：</div>
+        <div id="localLoadTip" style="margin-bottom:10px; color:#b91c1c; font-weight:600;">浏览器阻止 file:// 读取，请选择本地 all_content.txt 加载题库：</div>
         <div class="nav">
             <input id="filePicker" type="file" accept=".txt" style="display:none" />
-            <button class="btn" onclick="document.getElementById('filePicker').click();">选择 all_content.txt</button>
+            <button class="btn" id="pickBtn" onclick="document.getElementById('filePicker').click();">选择本地文件</button>
         </div>
     </div>
 
@@ -131,7 +132,7 @@ body {
         <button class="btn" id="randomBtn">随机一题</button>
         <button class="btn secondary" id="clearBtn">清除作答</button>
     </div>
-    <div class="footer">自适应布局，手机/电脑直接打开本地 HTML 即可刷题（需同目录下的 all_content.txt）。</div>
+    <div class="footer">自适应布局，手机/电脑直接打开本地 HTML 即可刷题（需同目录下的 all_content.txt 或 客观题题库.txt）。</div>
 </div>
 
 <script>
@@ -141,35 +142,66 @@ const state = {
     index: 0,
     answers: {}, // key -> {userAns, correct}
     mode: 'practice', // practice | exam | study
+    dataset: 'mode1', // mode1: all_content.txt, mode2: 客观题题库.txt
     typeFilter: new Set(['single','multi','judge','fill']),
     chapter: 'all'
+};
+
+const datasetInfo = {
+    mode1: { label: '模式一（all_content.txt）', file: 'all_content.txt' },
+    mode2: { label: '模式二（客观题题库.txt）', file: '客观题题库.txt' }
 };
 
 function normalize(str) {
     return (str || '').replace(/\s+/g,'').trim();
 }
 
+function updateLocalLoadTip() {
+    const info = datasetInfo[state.dataset];
+    const label = info ? info.label : '';
+    const fileName = info ? info.file : '题库文件';
+    const tip = document.getElementById('localLoadTip');
+    const btn = document.getElementById('pickBtn');
+    if (tip) tip.textContent = `浏览器阻止 file:// 读取，请选择本地 ${fileName} 加载题库（${label}）：`;
+    if (btn) btn.textContent = `选择 ${fileName}`;
+}
+
 async function loadQuestions() {
+    const info = datasetInfo[state.dataset];
+    if (!info) return;
+    updateLocalLoadTip();
+    document.getElementById('questionCard').innerHTML = '<div>加载题库中...</div>';
     try {
-        const res = await fetch('all_content.txt');
+        const res = await fetch(info.file);
+        if (!res.ok) throw new Error(res.statusText);
         const text = await res.text();
         finishLoad(text);
     } catch (err) {
         console.warn('在线读取失败，尝试本地文件', err);
+        updateLocalLoadTip();
         document.getElementById('localLoadCard').style.display = 'block';
     }
 }
 
 function finishLoad(text) {
-    state.allQuestions = parseQuestions(text);
+    state.answers = {};
+    state.chapter = 'all';
+    state.typeFilter = new Set(['single','multi','judge','fill']);
+    state.allQuestions = parseQuestions(text, state.dataset);
     console.log('解析到题目数:', state.allQuestions.length);
+    buildDatasetChips();
     buildChapterSelect();
     buildTypeChips();
     buildModeChips();
     applyFilter();
+    document.getElementById('localLoadCard').style.display = 'none';
 }
 
-function parseQuestions(text) {
+function parseQuestions(text, dataset) {
+    return dataset === 'mode2' ? parseMode2(text) : parseMode1(text);
+}
+
+function parseMode1(text) {
     const rawLines = text.split(/\r?\n/);
     const questions = [];
     const chapterRe = /第\s*[一二三四五六七八九十百]+\s*章[^\n]*/;
@@ -244,6 +276,66 @@ function parseQuestions(text) {
     return questions;
 }
 
+function parseMode2(text) {
+    const lines = text.split(/\r?\n/);
+    const questions = [];
+    let qType = null;
+
+    const typeFromHeading = (line) => {
+        if (/单选题/.test(line)) return 'single';
+        if (/多选题/.test(line)) return 'multi';
+        if (/判断题/.test(line)) return 'judge';
+        return null;
+    };
+
+    const isQuestionStart = (line) => /^\d+[\.．、]/.test(line);
+
+    const extractAnswers = (stem, type) => {
+        if (type === 'judge') {
+            if (/√/.test(stem)) return ['正确'];
+            if (/×|X/.test(stem)) return ['错误'];
+            return [];
+        }
+        const m = stem.match(/[（(]([A-F]+)[)）]/);
+        if (!m) return [];
+        return m[1].split('').map(s => s.toUpperCase());
+    };
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        const t = typeFromHeading(line);
+        if (t) { qType = t; continue; }
+        if (!qType) continue;
+
+        const m = line.match(/^(\d+)[\.．、]\s*(.+)$/);
+        if (!m) continue;
+
+        let stem = m[2].trim();
+        const answers = extractAnswers(stem, qType);
+        stem = stem.replace(/[（(][A-F√×Xx]+[)）]/g, '').trim();
+
+        const options = [];
+        if (qType !== 'judge') {
+            for (i = i + 1; i < lines.length; i++) {
+                const l = lines[i].trim();
+                if (!l) continue;
+                if (typeFromHeading(l) || isQuestionStart(l)) { i--; break; }
+                const om = l.match(/^([A-F])[\.、．）)]\s*(.+)$/);
+                if (om) options.push({ label: om[1].toUpperCase(), text: om[2].trim() });
+            }
+        }
+
+        if (!answers.length) continue; // 跳过无法确定答案的题
+        const chapter = '客观题题库';
+        const q = { chapter, type: qType, question: stem, options, answers };
+        questions.push(q);
+    }
+
+    return questions;
+}
+
 document.getElementById('filePicker').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -302,6 +394,26 @@ function buildModeChips() {
             container.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
             chip.classList.add('active');
             renderQuestion();
+        };
+        container.appendChild(chip);
+    });
+}
+
+function buildDatasetChips() {
+    const container = document.getElementById('datasetFilters');
+    const items = Object.entries(datasetInfo);
+    container.innerHTML = '';
+    items.forEach(([key, info]) => {
+        const chip = document.createElement('button');
+        chip.className = 'chip' + (key === state.dataset ? ' active' : '');
+        chip.textContent = info.label;
+        chip.onclick = () => {
+            if (state.dataset === key) return;
+            state.dataset = key;
+            state.answers = {};
+            state.index = 0;
+            document.getElementById('localLoadCard').style.display = 'none';
+            loadQuestions();
         };
         container.appendChild(chip);
     });
@@ -467,7 +579,10 @@ document.getElementById('nextBtn').onclick = next;
 document.getElementById('randomBtn').onclick = randomOne;
 document.getElementById('clearBtn').onclick = clearAnswers;
 
-document.addEventListener('DOMContentLoaded', loadQuestions);
+document.addEventListener('DOMContentLoaded', () => {
+    buildDatasetChips();
+    loadQuestions();
+});
 </script>
 </body>
 </html>
