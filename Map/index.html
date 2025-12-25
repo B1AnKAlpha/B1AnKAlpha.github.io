@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国土地资源与生态环境可视化平台</title>
+    <!-- 引入 ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <!-- 引入 JQuery 用于加载地图数据 -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- 引入自定义样式 -->
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+    <!-- 顶部 Hero 区域 -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-title">人口·经济·教育观察</div>
+            <div class="hero-subtitle">基于官方统计的省-市两级综合信息可视化</div>
+            <div class="hero-badge">制作: 西南交通大学 于沛豪 2023113911 遥感1班</div>
+        </div>
+        
+        <!-- 导航栏 (嵌入 Hero) -->
+        <div class="top-nav">
+            <div class="nav-btn population active" onclick="switchLayer('population')">
+                人口总量
+            </div>
+            <div class="nav-btn gdp" onclick="switchLayer('gdp')">
+                地区生产总值
+            </div>
+            <div class="nav-btn students" onclick="switchLayer('students')">
+                小学在校生
+            </div>
+        </div>
+    </div>
+
+    <!-- 主体 -->
+    <div class="main-container">
+        <!-- 左侧信息面板 -->
+        <div class="left-panel">
+            <div class="panel-section">
+                <div class="panel-title" id="infoTitle">人口总量</div>
+                <div class="panel-desc" id="infoDesc">
+                    以常住人口（万人）为口径汇总的省级统计，来源：2023 年各地统计公报。
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">2023年各省分布特征 (Top 5)</div>
+                <div id="pieChart" class="chart-container"></div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">排名前五省份对比</div>
+                <div id="barChart" class="chart-container"></div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">数据分布频率 (省份数量)</div>
+                <div id="distChart" class="chart-container"></div>
+            </div>
+        </div>
+
+        <!-- 地图区域 -->
+        <div class="map-container">
+            <div id="worldMap"></div>
+            
+            <!-- 指南针 -->
+            <div class="compass">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#333" stroke-width="2"/>
+                    <path d="M50 10 L60 50 L50 90 L40 50 Z" fill="#eee" stroke="#333" stroke-width="1"/>
+                    <path d="M50 10 L60 50 L50 50 L40 50 Z" fill="#e74c3c"/>
+                    <text x="46" y="25" font-family="Arial" font-size="14" font-weight="bold" fill="#e74c3c">N</text>
+                </svg>
+            </div>
+
+            <!-- 比例尺 -->
+            <div class="scale-bar">
+                <div class="scale-line"></div>
+                <span>500 km</span>
+            </div>
+
+            <!-- 地图控制工具栏 -->
+            <div class="map-controls">
+                <div class="control-btn" onclick="zoomMap(1.2)" title="放大">+</div>
+                <div class="control-btn" onclick="zoomMap(0.8)" title="缩小">-</div>
+                <div class="control-btn" onclick="resetMap()" title="复位">⟲</div>
+            </div>
+
+            <!-- 省份详情卡片 (默认隐藏) -->
+            <div class="province-card" id="provinceCard">
+                <div class="card-header">
+                    <span id="cardTitle">省份名称</span>
+                    <span class="close-btn" onclick="closeCard()">×</span>
+                </div>
+                <div class="card-body" id="cardDataList">
+                    <!-- 数据将通过 JS 动态插入 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 省级专题深度透视 -->
+    <div class="main-container province-section">
+        <!-- 左侧信息面板 -->
+        <div class="left-panel">
+            <div class="panel-section">
+                <div class="panel-title">省级专题深度透视</div>
+                <div class="panel-desc">
+                    选择特定省份，深入查看其内部地级市的专题分布特征。
+                </div>
+                <div class="province-selector">
+                    <select id="provinceSelect" onchange="switchProvince()"></select>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">地级市数据对比</div>
+                <div id="provinceBarChart" class="chart-container"></div>
+            </div>
+        </div>
+
+        <!-- 地图区域 -->
+        <div class="map-container">
+            <div id="provinceMap" style="width: 100%; height: 100%;"></div>
+            <div class="map-title" id="provinceMapTitle">四川省人口总量分布</div>
+            <!-- 指南针 -->
+            <div class="compass province-compass">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#333" stroke-width="2"/>
+                    <path d="M50 10 L60 50 L50 90 L40 50 Z" fill="#eee" stroke="#333" stroke-width="1"/>
+                    <path d="M50 10 L60 50 L50 50 L40 50 Z" fill="#e74c3c"/>
+                    <text x="46" y="25" font-family="Arial" font-size="14" font-weight="bold" fill="#e74c3c">N</text>
+                </svg>
+            </div>
+            <!-- 比例尺 -->
+            <div class="scale-bar province-scale">
+                <div class="scale-line province-scale-line"></div>
+                <span>200 km</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 方法与阅读指引 -->
+    <section class="analysis-container">
+        <div class="section-header">
+            <div class="section-title">如何阅读这张专题地图</div>
+            <div class="section-subtitle">数据来自 2022-2023 年官方统计资料，覆盖省级与地级市两级。图例按数据分布分段，支持交互缩放与省级下钻。</div>
+        </div>
+        <div class="analysis-grid">
+            <div class="analysis-card">
+                <h3>专题图层切换</h3>
+                <p>顶部切换在人口总量、地区生产总值、小学在校生三大指标间切换，左侧图表与地图联动更新。</p>
+            </div>
+            <div class="analysis-card">
+                <h3>科学分级表达</h3>
+                <p>图例采用自然断点法（Jenks）进行数据分级，确保色彩梯度能真实反映地理要素的空间分布特征与聚集规律。</p>
+            </div>
+            <div class="analysis-card">
+                <h3>多维指标联动</h3>
+                <p>点击地图省份可透视该区域的省级指标分布，选择下钻到地级市查看人口、GDP、教育等对比。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 底部页脚 -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p>2025 中国土地资源与生态环境可视化平台 | 西南交通大学 遥感科学与技术 于沛豪</p>
+            <p>数据来源: 国家统计局 / 生态环境部 / 水利部</p>
+        </div>
+    </footer>
+
+    <!-- 引入自定义脚本 -->
+    <script src="assets/data/metrics.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
