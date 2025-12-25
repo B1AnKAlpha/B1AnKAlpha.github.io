@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <meta name="referrer" content="no-referrer" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中国土地资源与生态环境可视化平台</title>
+    <title>中国省域发展要素综合专题地图</title>
     <!-- 引入 ECharts -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <!-- 引入 JQuery 用于加载地图数据 -->
@@ -16,8 +17,8 @@
     <!-- 顶部 Hero 区域 -->
     <div class="hero-section">
         <div class="hero-content">
-            <div class="hero-title">人口·经济·教育观察</div>
-            <div class="hero-subtitle">基于官方统计的省-市两级综合信息可视化</div>
+            <div class="hero-title">中国省域发展要素综合专题地图</div>
+            <div class="hero-subtitle">人口规模 · 经济总量 · 教育支撑（省—市两级综合信息表达）</div>
             <div class="hero-badge">制作: 西南交通大学 于沛豪 2023113911 遥感1班</div>
         </div>
         
@@ -125,7 +126,7 @@
         <!-- 地图区域 -->
         <div class="map-container">
             <div id="provinceMap" style="width: 100%; height: 100%;"></div>
-            <div class="map-title" id="provinceMapTitle">四川省人口总量分布</div>
+            <div class="map-title" id="provinceMapTitle">山东省人口总量分布</div>
             <!-- 指南针 -->
             <div class="compass province-compass">
                 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -146,7 +147,7 @@
     <!-- 方法与阅读指引 -->
     <section class="analysis-container">
         <div class="section-header">
-            <div class="section-title">如何阅读这张专题地图</div>
+            <div class="section-title">如何阅读这套综合专题地图</div>
             <div class="section-subtitle">数据来自 2022-2023 年官方统计资料，覆盖省级与地级市两级。图例按数据分布分段，支持交互缩放与省级下钻。</div>
         </div>
         <div class="analysis-grid">
@@ -168,8 +169,8 @@
     <!-- 底部页脚 -->
     <footer class="site-footer">
         <div class="footer-content">
-            <p>2025 综合信息可视化演示 | 2023113911 于沛豪 遥感1班</p>
-            <p>数据来源: 国家统计局 / 生态环境部 / 教育部</p>
+            <p>2025 中国省域发展要素综合专题地图 | 2023113911 于沛豪 遥感1班</p>
+            <p>数据来源: 国家统计局 / 各地统计公报</p>
         </div>
     </footer>
 
