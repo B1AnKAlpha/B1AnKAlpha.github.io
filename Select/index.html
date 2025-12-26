@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>课程教师评分悬浮窗插件</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #eef2f8;
+      --card: #ffffff;
+      --text: #121621;
+      --muted: #5d6472;
+      --accent: #ff7a5c;
+      --accent-2: #396afc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: radial-gradient(circle at 20% 20%, #fbe3d9, transparent 35%),
+                  radial-gradient(circle at 80% 0%, #d8e5ff, transparent 30%),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      padding: 36px 18px 42px;
+      display: flex;
+      justify-content: center;
+    }
+    .wrap {
+      width: 100%;
+      max-width: 880px;
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 18px 46px rgba(0,0,0,0.08);
+      padding: 30px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .wrap::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,122,92,0.06), rgba(57,106,252,0.05));
+      pointer-events: none;
+    }
+    h1, h2 {
+      margin: 0;
+      letter-spacing: 0.3px;
+    }
+    h1 { font-size: 28px; }
+    h2 { margin-top: 24px; font-size: 20px; }
+    p { margin: 10px 0 0; color: var(--muted); }
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      position: relative;
+      z-index: 1;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,122,92,0.12);
+      color: var(--accent);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .download {
+      display: flex;
+      gap: 12px;
+      margin: 18px 0 6px;
+      flex-wrap: wrap;
+      z-index: 1;
+      position: relative;
+    }
+    .btn {
+      padding: 12px 18px;
+      border-radius: 10px;
+      text-decoration: none;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), #ff9a7b);
+      font-weight: 700;
+      box-shadow: 0 12px 26px rgba(255,122,92,0.25);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .btn.secondary {
+      background: linear-gradient(135deg, var(--accent-2), #5d92ff);
+      box-shadow: 0 12px 26px rgba(57,106,252,0.25);
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 32px rgba(0,0,0,0.12);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+      position: relative;
+      z-index: 1;
+    }
+    .step {
+      background: rgba(243, 245, 249, 0.9);
+      border-radius: 12px;
+      padding: 14px 16px;
+      min-height: 90px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+    .step b {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      margin-right: 8px;
+      border-radius: 8px;
+      background: rgba(57,106,252,0.14);
+      color: var(--accent-2);
+      font-weight: 700;
+    }
+    .card {
+      background: rgba(243, 245, 249, 0.9);
+      border-radius: 12px;
+      padding: 16px 18px;
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 14px;
+      position: relative;
+      z-index: 1;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+    footer {
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--muted);
+      position: relative;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        
+        <h1>课程教师评分悬浮窗</h1>
+        <p>在教务网选课页面悬停教师姓名，弹出活水评分与评论。轻量、免登录、即装即用。</p>
+      </div>
+    </div>
+
+    <h2>下载</h2>
+    <div class="download">
+      <a class="btn" href="./extension.crx">下载 CRX</a>
+      <a class="btn secondary" href="./extension.zip">下载 ZIP（解压后加载）</a>
+    </div>
+
+    <h2>安装（推荐：解压加载）</h2>
+    <div class="grid">
+      <div class="step"><b>1</b>将 <strong>extension.zip</strong> 解压到任意文件夹。</div>
+      <div class="step"><b>2</b>打开 <code>chrome://extensions/</code>，右上开启<strong>开发者模式</strong>。</div>
+      <div class="step"><b>3</b>点击“加载已解压的扩展程序”，选择解压后的文件夹。</div>
+      <div class="step"><b>4</b>刷新教务页，悬停教师姓名即可查看评分与评价。</div>
+    </div>
+
+    <h2>其他安装方法</h2>
+    <div class="card">
+      将 <strong>extension.crx</strong> 拖入 <code>chrome://extensions/</code> 并确认安装；若被拦截，先开启开发者模式再拖拽。
+    </div>
+
+    <footer>
+      提示：更新时可重新加载解压目录，或用同一私钥重新打包 CRX。
+    </footer>
+  </div>
+</body>
+</html>
