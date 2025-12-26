@@ -155,8 +155,11 @@
 
     <h2>下载</h2>
     <div class="download">
-      <a class="btn" href="./extension.crx">下载 CRX</a>
-      <a class="btn secondary" href="./extension.zip">下载 ZIP（解压后加载）</a>
+      <a class="btn" href="./extension.zip">下载 ZIP（解压后加载）</a>
+      <a class="btn secondary" href="./extension.crx" title="新版 Chrome/Edge 默认会拦截，建议用 ZIP">CRX（可能被浏览器拦截）</a>
+    </div>
+    <div class="card">
+      Chrome/Edge 自 2020 起默认禁止从第三方站点直接安装 CRX，若出现 <strong>CRX_REQUIRED_PROOF_MISSING</strong>，请改用 ZIP 解压后“加载已解压的扩展程序”。企业环境可通过组策略允许外部 CRX，但不推荐。
     </div>
 
     <h2>安装（推荐：解压加载）</h2>
